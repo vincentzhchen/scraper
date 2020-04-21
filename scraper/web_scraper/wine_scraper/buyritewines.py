@@ -23,7 +23,7 @@ def query_one_page(page_num, results_per_page):
         return pd.DataFrame()
 
     df = df.loc[df[4].notnull(), [4]]  # data is in every few rows
-    df.columns = ["JAVASCRIPT_DUMP"]
+    df.columns = ["RAW_DATA_STR"]
     df["PAGE_NUM"] = page_num
 
     df = get_metadata_from_query_result(df)
@@ -54,14 +54,14 @@ def query_all_pages(results_per_page, max_page_num=None):
 
 
 def get_metadata_from_query_result(df):
-    df["NAME"] = df["JAVASCRIPT_DUMP"].str.findall("content_name.*?,").apply(
+    df["NAME"] = df["RAW_DATA_STR"].str.findall("content_name.*?,").apply(
         lambda x: x[0].split(":")[1][:-1].strip() if x else None)
 
-    df["PRICE"] = df["JAVASCRIPT_DUMP"].str.findall("item_price.*?\}").apply(
+    df["PRICE"] = df["RAW_DATA_STR"].str.findall("item_price.*?\}").apply(
         lambda x: x[0].split(":")[1][:-2].replace(",", "") if x else None)
     df["PRICE"] = df["PRICE"].astype(float)
 
-    df["BASE_PRICE"] = df["JAVASCRIPT_DUMP"].str.findall("\(Reg.*?\)").apply(
+    df["BASE_PRICE"] = df["RAW_DATA_STR"].str.findall("\(Reg.*?\)").apply(
         lambda x: x[0].split("$")[1][:-1].replace(",", "") if x else None)
     df["BASE_PRICE"] = df["BASE_PRICE"].astype(float)
 
