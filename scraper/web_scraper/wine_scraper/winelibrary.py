@@ -63,7 +63,7 @@ def get_metadata_from_query_result(df):
     df["PRICE"] = df["PRICES"].apply(lambda x: x[0][1:].replace(",", ""))
     df["BASE_PRICE"] = df["PRICES"].apply(lambda x: x[1][1:].replace(",", ""))
 
-    df["IS_ON_SALE"] = df["BASE_PRICE"] != df["PRICE"]
+    df["IS_ON_SALE"] = df["BASE_PRICE"] > df["PRICE"]
     return df
 
 
