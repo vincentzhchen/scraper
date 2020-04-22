@@ -37,22 +37,16 @@ def query_one_page(page_num):
     return df
 
 
-def query_all_pages(max_page_num=None):
+def query_all_pages():
     all_dfs = []
-    if max_page_num is not None:
-        for page_num in range(1, max_page_num + 1):
-            df = query_one_page(page_num, )
+    page_num = 1
+    while True:
+        df = query_one_page(page_num)
+        if not df.empty:
             all_dfs.append(df)
-
-    else:
-        page_num = 1
-        while True:
-            df = query_one_page(page_num)
-            if not df.empty:
-                all_dfs.append(df)
-                page_num += 1
-            else:
-                break
+            page_num += 1
+        else:
+            break
 
     return pd.concat(all_dfs, ignore_index=True)
 
