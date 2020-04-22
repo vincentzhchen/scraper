@@ -76,9 +76,7 @@ def get_metadata_from_query_result(df):
 
 
 if __name__ == "__main__":
-    #df = query_all_pages()
-    df = query_one_page(9)
-
+    df = query_all_pages()
     now = pd.to_datetime("today").strftime("%Y%m%d_%H%M%S%f")
     out_file = "garyswine_catalog_{}.csv".format(now)
     df.to_csv(os.path.join(settings.DATA_DIRECTORY, out_file), index=False)
