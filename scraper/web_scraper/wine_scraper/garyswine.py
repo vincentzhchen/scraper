@@ -9,85 +9,76 @@ import pandas as pd
 # PROJECT LIB
 from scraper.settings import settings
 
-HTML = "https://www.garyswine.com/wines/"
-HTML_FORMAT = HTML + "?page={}&l={}"  # need a page number and result size
+HTML = "https://www.garyswine.com/"
+HTML_FORMAT = HTML + "wines/?page={}&l={}"  # need a page number and result size
+
+RESULTS_PER_PAGE = 100  # easier if constant
 
 
-def get_num_pages_and_results_per_page():
-    # this returns a list of dfs
-    first_query_results = pd.read_html(HTML)
+def query_one_page(page_num):
+    print("QUERYING page {}".format(page_num))
+    query = HTML_FORMAT.format(page_num, RESULTS_PER_PAGE)
+    result = pd.read_html(query)
+    df = pd.concat(result[2:-2])
+    df.columns = ["METADATA", "RAW_DATA_STR"]
+    df = df[["RAW_DATA_STR"]].dropna()
 
-    # determine number of pages to search through and maximum number
-    # of results per page; this is all found in the second df
-    df_page_info = first_query_results[1]
-    print("PAGE_INFO: \n{}\n".format(df_page_info))
+    df["SRC"] = HTML
+    df["QUERY"] = query
+    df["AS_OF_DATE"] = pd.to_datetime("today")
 
-    max_results_per_page = int(df_page_info[1].to_string().split(" ")[-1])
-    print("MAX_RESULTS_PER_PAGE: {}".format(max_results_per_page))
+    df = get_metadata_from_query_result(df)
 
-    first_col = df_page_info[0].to_string()
-    num_items = int(first_col.split("|")[0].strip().split(" ")[-1])
-    print("ALL ITEMS: {}".format(num_items))
-
-    num_pages = num_items // max_results_per_page + 1
-    print("DERIVED NUMBER OF PAGES: {}".format(num_pages))
-
-    return num_pages, max_results_per_page
-
-
-def query_one_page(page_num, results_per_page):
-    print("QUERYING page {} with {} results per page".format(
-        page_num, results_per_page))
-    query = pd.read_html(HTML_FORMAT.format(page_num, results_per_page))
-    df = pd.concat(query[2:-2])
-    df.columns = ["METADATA", "JAVASCRIPT_DUMP"]
-    df["PAGE_NUM"] = page_num
-
-    df = get_name_and_price_from_query_result(df)
-    df = df[df["NAME"].notnull()].reset_index(drop=True)
-
-    df = df[["NAME", "PRICE"]]
+    df = df[["NAME", "PRICE", "BASE_PRICE", "IS_ON_SALE", "SRC", "QUERY",
+             "AS_OF_DATE"]]
     return df
 
 
-def query_all_pages(max_page_num, results_per_page):
+def query_all_pages():
     all_dfs = []
-    for page_num in range(1, max_page_num + 1):
-        df = query_one_page(page_num, results_per_page)
-        all_dfs.append(df)
+    page_num = 1
+    while True:
+        df = query_one_page(page_num)
+        if not df.empty:
+            all_dfs.append(df)
+            page_num += 1
+        else:
+            break
+
     return pd.concat(all_dfs, ignore_index=True)
 
 
-def get_name_and_price_from_query_result(df):
-    def get_name(x):
-        try:
-            name = [a.strip() for a in x.split(",") if "content_name" in a][0]
-            name = name.split(":")[1].strip()
-            return name
-        except:
-            return None
+def get_metadata_from_query_result(df):
+    df["NAME"] = df["RAW_DATA_STR"].str.findall("content_name.*?,").apply(
+        lambda x: x[0].split(":")[1][:-1].strip() if x else None)
 
-    df["NAME"] = df["JAVASCRIPT_DUMP"].apply(get_name)
+    df = df[df["NAME"].notnull()].copy()
 
-    def get_price(x):
-        try:
-            price = [a.strip() for a in x.split(",") if "item_price" in a][0]
-            price = price.split(":")[1].split(" ")[0].strip()
-            price = float(price)
-            return price
-        except:
-            return None
+    # this should return a list of one price [reg. price] if no sale and
+    # two prices [sale price, reg. price] if sale
+    regex = "\$\d{1,3}(?:[,]\d{3})*(?:[.]\d{2})"
+    """
+            |--|------|------------|-----------|
+            |$ | 1-3  | 3 digits   | 2 digits  |
+            |  |digits| repeated   |  (cents)  |
+            |  |      |            |           |
+    """
+    df["PRICES"] = df["RAW_DATA_STR"].str.findall(regex)
+    df["PRICE"] = df["PRICES"].apply(lambda x: x[0][1:].replace(",", ""))
+    df["BASE_PRICE"] = df["PRICES"].apply(
+        # if one price, then take the single listed price
+        lambda x: x[1][1:].replace(",", "") if (
+            x[1:2]) else x[0][1:].replace(",", ""))
 
-    df["PRICE"] = df["JAVASCRIPT_DUMP"].apply(get_price)
+    df["IS_ON_SALE"] = df["BASE_PRICE"] > df["PRICE"]
 
     return df
 
 
 if __name__ == "__main__":
-    num_pages, max_results_per_page = get_num_pages_and_results_per_page()
-    df = query_all_pages(num_pages, max_results_per_page)
-    # df = query_one_page(9, 100)
+    #df = query_all_pages()
+    df = query_one_page(9)
 
     now = pd.to_datetime("today").strftime("%Y%m%d_%H%M%S%f")
     out_file = "garyswine_catalog_{}.csv".format(now)
-    df.to_csv(os.path.join(settings.DATA_DIRECTORY, out_file))
+    df.to_csv(os.path.join(settings.DATA_DIRECTORY, out_file), index=False)
