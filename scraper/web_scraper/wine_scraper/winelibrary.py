@@ -58,8 +58,15 @@ def get_metadata_from_query_result(df):
     # str.findall returns a list of one element, flatten this
     df["NAME"] = df["NAME"].apply(lambda x: x[0])
 
-    df["PRICES"] = df["RAW_DATA_STR"].str.findall(
-        "\$\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})")
+    # this should return a list of two prices [sale price, reg. price]
+    regex = "\$\d{1,3}(?:[,]\d{3})*(?:[.]\d{2})"
+    """
+            |--|------|------------|-----------|
+            |$ | 1-3  | 3 digits   | 2 digits  |
+            |  |digits| repeated   |  (cents)  |
+            |  |      |            |           |
+    """
+    df["PRICES"] = df["RAW_DATA_STR"].str.findall(regex)
     df["PRICE"] = df["PRICES"].apply(lambda x: x[0][1:].replace(",", ""))
     df["BASE_PRICE"] = df["PRICES"].apply(lambda x: x[1][1:].replace(",", ""))
 
