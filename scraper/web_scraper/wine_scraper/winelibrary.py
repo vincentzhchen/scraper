@@ -52,14 +52,14 @@ def query_all_pages():
 
 
 def get_metadata_from_query_result(df):
+    df["RAW_DATA_STR"] = df["RAW_DATA_STR"].str.replace("\n", "")
+
     df["NAME"] = df["RAW_DATA_STR"].str.findall("(?<=js-elip-multi'>).*?(?=<)")
     # str.findall returns a list of one element, flatten this
     df["NAME"] = df["NAME"].apply(lambda x: x[0])
 
-    df["RAW_DATA_STR"] = df["RAW_DATA_STR"].str.replace("\n", "")
     df["PRICES"] = df["RAW_DATA_STR"].str.findall(
         "\$\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})")
-
     df["PRICE"] = df["PRICES"].apply(lambda x: x[0][1:].replace(",", ""))
     df["BASE_PRICE"] = df["PRICES"].apply(lambda x: x[1][1:].replace(",", ""))
 
