@@ -3,7 +3,6 @@
 """
 
 # STANDARD LIB
-import bs4
 import os
 import pandas as pd
 import requests
