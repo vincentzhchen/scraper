@@ -5,9 +5,9 @@
 # STANDARD LIB
 import os
 import re
-import requests
 import bs4
 import pandas as pd
+import requests
 
 # PROJECT LIB
 from scraper.settings import settings
@@ -46,7 +46,7 @@ def query_one_page(session,
                    min_item=0,
                    max_item=100,
                    items_per_page=100):
-    """Query a single web page of a given html.
+    """Query a single web page of a given session and html.
 
     Args:
         session (request.session): a html request session.
@@ -59,7 +59,6 @@ def query_one_page(session,
     Returns:
         df (pd.DataFrame): returns a dataframe
             with ws_const.WINE_SCRAPER_OUTPUT_COLS
-
     """
     print("QUERYING items {} to {}".format(min_item, max_item))
     query = html_format + ":{}:{}:{}".format(min_item, max_item,
@@ -155,10 +154,17 @@ def get_metadata_from_query_result(df):
     return df
 
 
+def scrape():
+    """Main scrape method.
+
+    """
+    session = requests.session()
+    html_format = get_html_format(session)
+    df = query_all_pages(session, html_format)
+    now = pd.to_datetime("today").strftime("%Y%m%d_%H%M%S%f")
+    out_file = "allendalewine_catalog_{}.csv".format(now)
+    df.to_csv(os.path.join(settings.DATA_DIRECTORY, out_file), index=False)
+
+
 if __name__ == "__main__":
-    SESSION = requests.session()
-    HTML_FORMAT = get_html_format(SESSION)
-    OUTPUT = query_all_pages(SESSION, HTML_FORMAT)
-    OUT_FILE = "allendalewine_catalog_{}.csv".format(
-        pd.to_datetime("today").strftime("%Y%m%d_%H%M%S%f"))
-    OUTPUT.to_csv(os.path.join(settings.DATA_DIRECTORY, OUT_FILE), index=False)
+    scrape()
