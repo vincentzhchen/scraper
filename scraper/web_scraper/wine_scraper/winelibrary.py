@@ -75,7 +75,8 @@ def get_metadata_from_query_result(df):
     """
     df["RAW_DATA_STR"] = df["RAW_DATA_STR"].str.replace("\n", "")
 
-    df["NAME"] = df["RAW_DATA_STR"].str.findall("(?<=js-elip-multi'>).*?(?=<)")
+    df["NAME"] = df["RAW_DATA_STR"].str.findall(
+        r"(?<=js-elip-multi'>).*?(?=<)")
     # str.findall returns a list of one element, flatten this
     df["NAME"] = df["NAME"].apply(lambda x: x[0])
 
