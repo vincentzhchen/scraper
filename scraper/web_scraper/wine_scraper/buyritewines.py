@@ -101,6 +101,22 @@ def get_metadata_from_query_result(df):
     return df
 
 
+def scrape_one_page(page_num):
+    """Scrape a single page only.
+
+    Args:
+        page_num (int): page number of results to query.
+
+    Returns:
+        df (pd.DataFrame): returns a dataframe
+            with ws_const.WINE_SCRAPER_OUTPUT_COLS
+    """
+    df = query_one_page(page_num)
+    now = pd.to_datetime("today").strftime("%Y%m%d_%H%M%S%f")
+    out_file = "buyritewines_catalog_{}.csv".format(now)
+    df.to_csv(os.path.join(settings.DATA_DIRECTORY, out_file), index=False)
+
+
 def scrape():
     """Main scrape method.
 

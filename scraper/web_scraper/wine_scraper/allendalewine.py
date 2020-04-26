@@ -44,8 +44,8 @@ def get_html_format(session):
 def query_one_page(session,
                    html_format,
                    min_item=0,
-                   max_item=100,
-                   items_per_page=100):
+                   max_item=RESULTS_PER_PAGE,
+                   items_per_page=RESULTS_PER_PAGE):
     """Query a single web page of a given session and html.
 
     Args:
@@ -53,8 +53,9 @@ def query_one_page(session,
         html_format (str): the base html link to be modified with the
             item index.
         min_item (int, default 1): min item index.
-        max_item (int, default 100): max item index.
-        items_per_page (int, default 100): items to return per page.
+        max_item (int, default RESULTS_PER_PAGE): max item index.
+        items_per_page (int, default RESULTS_PER_PAGE): items to
+            return per page.
 
     Returns:
         df (pd.DataFrame): returns a dataframe
@@ -152,6 +153,30 @@ def get_metadata_from_query_result(df):
 
     df["IS_ON_SALE"] = df["BASE_PRICE"] > df["PRICE"]
     return df
+
+
+def scrape_one_page(min_item=0,
+                    max_item=RESULTS_PER_PAGE,
+                    items_per_page=RESULTS_PER_PAGE):
+    """Scrape a single page only.
+
+    Args:
+        min_item (int, default 1): min item index.
+        max_item (int, default RESULTS_PER_PAGE): max item index.
+        items_per_page (int, default RESULTS_PER_PAGE): items to
+            return per page.
+
+    Returns:
+        df (pd.DataFrame): returns a dataframe
+            with ws_const.WINE_SCRAPER_OUTPUT_COLS
+    """
+    session = requests.session()
+    html_format = get_html_format(session)
+    df = query_one_page(session, html_format, min_item, max_item,
+                        items_per_page)
+    now = pd.to_datetime("today").strftime("%Y%m%d_%H%M%S%f")
+    out_file = "allendalewine_catalog_{}.csv".format(now)
+    df.to_csv(os.path.join(settings.DATA_DIRECTORY, out_file), index=False)
 
 
 def scrape():
