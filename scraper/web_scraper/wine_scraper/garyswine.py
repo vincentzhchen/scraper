@@ -29,6 +29,10 @@ def query_one_page(page_num):
     print("QUERYING page {}".format(page_num))
     query = HTML_FORMAT.format(page_num, RESULTS_PER_PAGE)
     result = pd.read_html(query)
+    if not result[2:-2]:
+        print("NO DATA found, returning empty df.")
+        return pd.DataFrame()
+
     df = pd.concat(result[2:-2])
     df.columns = ["METADATA", "RAW_DATA_STR"]
     df = df[["RAW_DATA_STR"]].dropna()

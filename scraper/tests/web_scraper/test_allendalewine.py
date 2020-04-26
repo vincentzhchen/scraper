@@ -9,3 +9,6 @@ def test_scrape_one_page_001():
 
 def test_scrape_one_page_002():
     allendalewine.scrape_one_page(200, 300)
+
+def test_scrape_one_page_003():
+    allendalewine.scrape_one_page(9999, 10000)
