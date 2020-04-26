@@ -16,6 +16,7 @@ if os.path.exists(scraper_config_path):
 
     # Setup constants.
     DATA_DIRECTORY = c.DATA_DIRECTORY
+    DB_DIRECTORY = c.DB_DIRECTORY
 else:
     print("No configuration file found... exiting process...")
     sys.exit(1)
