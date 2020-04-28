@@ -6,10 +6,10 @@
 from scraper.web_scraper.wine_scraper import garyswine
 
 def test_scrape_one_page_001():
-    garyswine.scrape_one_page(1)
+    assert not garyswine.scrape_one_page(1).empty
 
 def test_scrape_one_page_002():
-    garyswine.scrape_one_page(9)
+    assert not garyswine.scrape_one_page(9).empty
 
 def test_scrape_one_page_003():
-    garyswine.scrape_one_page(999)
+    assert garyswine.scrape_one_page(999).empty

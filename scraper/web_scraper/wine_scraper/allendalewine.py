@@ -3,14 +3,12 @@
 """
 
 # STANDARD LIB
-import os
 import re
 import bs4
 import pandas as pd
 import requests
 
 # PROJECT LIB
-from scraper.settings import settings
 from scraper.web_scraper.wine_scraper import constants as ws_const
 
 HTML = "https://www.allendalewine.com/"
@@ -174,22 +172,17 @@ def scrape_one_page(min_item=0,
     html_format = get_html_format(session)
     df = query_one_page(session, html_format, min_item, max_item,
                         items_per_page)
-    now = pd.to_datetime("today").strftime("%Y%m%d_%H%M%S%f")
-    out_file = "allendalewine_catalog_{}.csv".format(now)
-    df.to_csv(os.path.join(settings.DATA_DIRECTORY, out_file), index=False)
+    return df
 
 
 def scrape():
-    """Main scrape method.
+    """Scrape all pages.
 
+    Returns:
+        df (pd.DataFrame): returns a dataframe
+            with ws_const.WINE_SCRAPER_OUTPUT_COLS
     """
     session = requests.session()
     html_format = get_html_format(session)
     df = query_all_pages(session, html_format)
-    now = pd.to_datetime("today").strftime("%Y%m%d_%H%M%S%f")
-    out_file = "allendalewine_catalog_{}.csv".format(now)
-    df.to_csv(os.path.join(settings.DATA_DIRECTORY, out_file), index=False)
-
-
-if __name__ == "__main__":
-    scrape()
+    return df

@@ -6,10 +6,10 @@
 from scraper.web_scraper.wine_scraper import allendalewine
 
 def test_scrape_one_page_001():
-    allendalewine.scrape_one_page()
+    assert not allendalewine.scrape_one_page().empty
 
 def test_scrape_one_page_002():
-    allendalewine.scrape_one_page(200, 300)
+    assert not allendalewine.scrape_one_page(200, 300).empty
 
 def test_scrape_one_page_003():
-    allendalewine.scrape_one_page(9999, 10000)
+    assert allendalewine.scrape_one_page(9999, 10000).empty
