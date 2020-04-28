@@ -26,7 +26,7 @@ def scrape(run_id, module):
     try:
         name = module.__name__.split(".")[-1]
         print("Scraping {}...".format(name))
-        df = allendalewine.scrape()
+        df = module.scrape()
         cols = df.columns.tolist()
         df["RUN_ID"] = run_id
         df = df[["RUN_ID"] + cols]
