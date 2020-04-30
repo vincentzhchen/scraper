@@ -136,6 +136,11 @@ def query_one_page(session, html_link):
 def query_all_pages(session, html_format):
     """Query all item pages until no results come back.
 
+    For a single html base format, there is an unknown number of items.
+    E.g. we don't know how many red wines are in the red wine category.
+    Given the base link for red wines, need to generate and query
+    individual result pages.
+
     Args:
         session (request.session): a html request session.
         html_format (str): the base html link to be modified with the
@@ -249,4 +254,4 @@ def scrape():
 
 
 if __name__ == "__main__":
-    scraper_io.to_csv(scrape(), "allendale_wine_catalog")
+    scraper_io.to_csv(scrape(), "allendalewine_catalog")
