@@ -20,7 +20,15 @@ RESULTS_PER_PAGE = 100  # easier if constant
 def get_html_format(session, page_name="search"):
     """Derive the html base link format from an instantiated session.
 
-    Each session has a unique session key attached to the page.
+    Each session has a unique session key attached to the page.  For example,
+    https://www.allendalewine.com/r/Cats/Red%20Wine has a hidden session
+    ID that must be retrieved in order to continue making queries for
+    that session.
+
+    The resulting html link format should have a session ID like below:
+    https://www.allendalewine.com/scan/MM=ab74b62767f10ebd8144523111d08f19
+
+    This is the link ready for modifying with item queries.
 
     Args:
         session (request.session): a html request session.
@@ -52,6 +60,8 @@ def get_html_format(session, page_name="search"):
 def get_html_formats(session):
     """Derive the html base link formats from an instantiated session.
 
+    Loop through all the wine links and modify them to have the session IDs.
+
     Args:
         session (request.session): a html request session.
 
@@ -60,14 +70,15 @@ def get_html_formats(session):
     """
     all_formats = []
     pages = [
-        r"r/Cats/Red%20Wine", r"r/Cats/White%20Wine",
-        r"results?countryid=&regionid=&catid=1088",
-        r"results?countryid=&regionid=&catid=1060",
-        r"results?countryid=&regionid=&catid=1211",
-        r"results?countryid=&regionid=&catid=1438",
-        r"results?countryid=&regionid=&catid=1361",
-        r"results?countryid=&regionid=&catid=1369",
-        r"results?countryid=&regionid=&catid=1021"
+        r"r/Cats/Red%20Wine",  # red wine
+        r"r/Cats/White%20Wine",  # white wine
+        r"results?countryid=&regionid=&catid=1088",  # sparkling wine
+        r"results?countryid=&regionid=&catid=1060",  # dessert wine
+        r"results?countryid=&regionid=&catid=1211",  # rose
+        r"results?countryid=&regionid=&catid=1438",  # rice wine
+        r"results?countryid=&regionid=&catid=1361",  # fruit wine
+        r"results?countryid=&regionid=&catid=1369",  # sangria
+        r"results?countryid=&regionid=&catid=1021"  # non-alcoholic wine
     ]
     for page in pages:
         html = get_html_format(session, page_name=page)
@@ -82,7 +93,15 @@ def link_generator(html_format,
                    items_per_page=RESULTS_PER_PAGE):
     """Create proper html link for querying.
 
-    Add item index here if applicable.
+    Given an html_format with session ID, add item index if applicable.
+
+    Example:
+        Here is a base html format before adding an item index
+        (~ is the allendale prefix):
+            ~/scan/MM=ab74b62767f10ebd8144523111d08f19
+
+        And the same link when querying for items 50 to 99, at intervals of 50:
+            ~/scan/MM=ab74b62767f10ebd8144523111d08f19:50:99:50
 
     Args:
         html_format (str): the base html link to be modified with the

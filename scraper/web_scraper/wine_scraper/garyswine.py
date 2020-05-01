@@ -6,6 +6,7 @@
 import pandas as pd
 
 # PROJECT LIB
+from scraper.util import scraper_io
 from scraper.web_scraper.wine_scraper import constants as ws_const
 
 HTML = "https://www.garyswine.com/"
@@ -120,3 +121,7 @@ def scrape():
     """
     df = query_all_pages()
     return df
+
+
+if __name__ == "__main__":
+    scraper_io.to_csv(scrape(), "garyswine_catalog")
