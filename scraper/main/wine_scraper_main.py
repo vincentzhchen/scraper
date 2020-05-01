@@ -3,6 +3,7 @@
 """
 
 # STANDARD LIB
+import argparse
 import os
 import pandas as pd
 
@@ -44,10 +45,18 @@ def main():
     """
     run_id = int(pd.to_datetime("today").strftime("%Y%m%d%H%M%S"))
 
-    scrape(run_id, allendalewine)
-    scrape(run_id, buyritewines)
-    scrape(run_id, garyswine)
-    scrape(run_id, winelibrary)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--scraper_to_run")
+    args = parser.parse_args()
+
+    if args.scraper_to_run is None or args.scraper_to_run == "allendalewine":
+        scrape(run_id, allendalewine)
+    if args.scraper_to_run is None or args.scraper_to_run == "buyritewines":
+        scrape(run_id, buyritewines)
+    if args.scraper_to_run is None or args.scraper_to_run == "garyswine":
+        scrape(run_id, garyswine)
+    if args.scraper_to_run is None or args.scraper_to_run == "winelibrary":
+        scrape(run_id, winelibrary)
 
 
 if __name__ == "__main__":
